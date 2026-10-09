@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 
-from config import CATEGORIES, BG, WHITE, TEXT, MUTED, FONT
+from config import CATEGORIES, BG, BLUE, WHITE, TEXT, MUTED, FONT
 from logic import read_amount
 from widgets import FlatButton, make_card, make_entry, field, make_tree
 
@@ -11,9 +11,17 @@ from widgets import FlatButton, make_card, make_entry, field, make_tree
 class PersonalMixin:
     def build_personal(self):
         page = self.pages["personal"]
-        self.page_title(page, "Personal Budget", "Add, search, edit and remove your expenses")
+        self.page_title(page, "Personal Budget", "Track your spending and your investments")
+        switch = tk.Frame(page, bg=BG)
+        switch.pack(fill="x", pady=(0, 12))
+        self.view_chips = {}
+        for key, label in (("expenses", "Expenses"), ("investments", "Investments")):
+            chip = tk.Label(switch, text=label, padx=16, pady=6, cursor="hand2", font=(FONT, 10, "bold"))
+            chip.pack(side="left", padx=(0, 8))
+            chip.bind("<Button-1>", lambda e, k=key: self.set_personal_view(k))
+            self.view_chips[key] = chip
         body = tk.Frame(page, bg=BG)
-        body.pack(fill="both", expand=True)
+        self.exp_body = body
 
         form = make_card(body)
         form.pack(side="left", fill="y", padx=(0, 16))
@@ -57,6 +65,16 @@ class PersonalMixin:
         FlatButton(foot, "Delete all", self.delete_all_entries, "ghost").pack(side="right")
         FlatButton(foot, "Delete", self.delete_entry, "ghost").pack(side="right", padx=6)
         FlatButton(foot, "Edit", self.edit_selected).pack(side="right")
+
+        self.build_investments(page)
+        self.set_personal_view("expenses")
+
+    def set_personal_view(self, view):
+        self.exp_body.pack_forget()
+        self.inv_body.pack_forget()
+        (self.exp_body if view == "expenses" else self.inv_body).pack(fill="both", expand=True)
+        for key, chip in self.view_chips.items():
+            chip.config(bg=BLUE if key == view else WHITE, fg=WHITE if key == view else MUTED)
 
     def add_entry(self):
         category = self.cat_combo.get()

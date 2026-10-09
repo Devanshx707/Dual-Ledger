@@ -16,5 +16,10 @@ def connect_db(path=DB_NAME):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             group_name TEXT NOT NULL, payer TEXT NOT NULL, amount REAL NOT NULL,
             category TEXT NOT NULL, date TEXT NOT NULL, participants TEXT NOT NULL)""")
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS investments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL, kind TEXT NOT NULL, amount REAL NOT NULL,
+            value REAL NOT NULL, date TEXT NOT NULL)""")
     conn.commit()
     return conn, cursor

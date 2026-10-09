@@ -49,7 +49,7 @@ class GroupMixin:
         FlatButton(head, "Delete group", self.delete_group_all, "ghost").pack(side="right")
         FlatButton(head, "Delete selected", self.delete_group_expense, "ghost").pack(side="right", padx=6)
         self.group_tree = make_tree(top, ("id", "payer", "amount", "category", "date", "split"),
-                                    (0, 130, 70, 80, 85, 110), 6)
+                                    (0, 150, 65, 70, 80, 120), 6)
 
         bottom = tk.Frame(right, bg=BG)
         bottom.pack(fill="x", pady=(16, 0))

@@ -4,6 +4,8 @@ from tkinter import messagebox
 from datetime import datetime
 
 from config import CATEGORIES, BLUE, BLUE_LIGHT, WHITE, BG, TEXT, MUTED, FONT
+from logic import portfolio_summary
+from tips import generate_tips
 from widgets import FlatButton, make_card, make_bar, draw_bar
 
 
@@ -12,8 +14,20 @@ class DashboardMixin:
         page = self.pages["dashboard"]
         self.page_title(page, "Dashboard", "Overview of your personal spending")
 
-        hero = make_card(page)
-        hero.pack(fill="x", pady=(0, 16))
+        top = tk.Frame(page, bg=BG)
+        top.pack(fill="x", pady=(0, 16))
+        tips = make_card(top)
+        tips.configure(width=370, height=236)
+        tips.pack_propagate(False)
+        tips.pack(side="right", fill="y", padx=(16, 0))
+        tk.Label(tips, text="Tips for you", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).pack(
+            anchor="w", padx=16, pady=(12, 2))
+        tk.Label(tips, text="General tips from your own data. Not financial advice.", bg=WHITE,
+                 fg=MUTED, font=(FONT, 8)).pack(side="bottom", anchor="w", padx=16, pady=(0, 8))
+        self.tips_frame = tk.Frame(tips, bg=WHITE)
+        self.tips_frame.pack(fill="both", expand=True, padx=8)
+        hero = make_card(top)
+        hero.pack(side="left", fill="both", expand=True)
         tk.Label(hero, text="Total spent", bg=WHITE, fg=MUTED, font=(FONT, 10)).pack(
             anchor="w", padx=24, pady=(18, 0))
         self.hero_total = tk.Label(hero, text="0.00", bg=WHITE, fg=TEXT, font=(FONT, 28, "bold"))
@@ -32,12 +46,20 @@ class DashboardMixin:
         lower.pack(fill="both", expand=True)
 
         cat_card = make_card(lower)
-        tk.Label(cat_card, text="Spending by category", bg=WHITE, fg=TEXT,
-                 font=(FONT, 12, "bold")).pack(anchor="w", padx=16, pady=(14, 0))
-        tk.Label(cat_card, text="Click a category to filter recent entries", bg=WHITE, fg=MUTED,
-                 font=(FONT, 9)).pack(anchor="w", padx=16, pady=(0, 6))
+        head_row = tk.Frame(cat_card, bg=WHITE)
+        head_row.pack(fill="x", padx=16, pady=(14, 0))
+        tk.Label(head_row, text="Statistics", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).pack(side="left")
+        self.stats_chips = {}
+        for key, label in (("monthly", "Monthly"), ("categories", "Categories")):
+            chip = tk.Label(head_row, text=label, padx=10, pady=3, cursor="hand2", font=(FONT, 9, "bold"))
+            chip.pack(side="right", padx=(6, 0))
+            chip.bind("<Button-1>", lambda e, k=key: self.set_stats_view(k))
+            self.stats_chips[key] = chip
+        self.stats_hint = tk.Label(cat_card, text="", bg=WHITE, fg=MUTED, font=(FONT, 9))
+        self.stats_hint.pack(anchor="w", padx=16, pady=(0, 6))
         self.cat_frame = tk.Frame(cat_card, bg=WHITE)
-        self.cat_frame.pack(fill="x", padx=8, pady=(0, 14))
+        self.build_stats_chart(cat_card)
+        self.set_stats_view("monthly")
 
         recent = make_card(lower)
         recent.pack(side="right", fill="y")
@@ -74,7 +96,14 @@ class DashboardMixin:
         self.hero_total.config(text=f"{total:,.2f}")
         self.hero_pct.config(text=f"{share * 100:.0f}%")
         draw_bar(self.hero_bar, share)
-        self.hero_caption.config(text=f"This month: {month_total:,.2f} of all spending")
+        caption = f"This month: {month_total:,.2f} of all spending"
+        self.cursor.execute("SELECT kind, amount, value FROM investments")
+        holdings = self.cursor.fetchall()
+        if holdings:
+            summary = portfolio_summary(holdings)
+            caption += (f"\nInvested: {summary['invested']:,.2f} | Value: {summary['value']:,.2f} "
+                        f"({summary['gain_pct']:+.1f}%)")
+        self.hero_caption.config(text=caption, justify="left")
 
         for widget in self.cat_frame.winfo_children():
             widget.destroy()
@@ -104,6 +133,32 @@ class DashboardMixin:
                 widget.bind("<Enter>", lambda e, ws=widgets, a=active: None if a else self.paint(ws, BG))
                 widget.bind("<Leave>", lambda e, ws=widgets, a=active: None if a else self.paint(ws, WHITE))
         self.render_recent()
+        self.render_tips()
+        self.refresh_stats()
+
+    def render_tips(self):
+        for widget in self.tips_frame.winfo_children():
+            widget.destroy()
+        self.cursor.execute("SELECT category, amount, date FROM personal_expenses")
+        expenses = self.cursor.fetchall()
+        self.cursor.execute("SELECT kind, amount, value FROM investments")
+        holdings = self.cursor.fetchall()
+        for title, text, cat in generate_tips(expenses, holdings):
+            row = tk.Frame(self.tips_frame, bg=WHITE)
+            row.pack(fill="x", pady=3)
+            accent = tk.Frame(row, bg=BLUE, width=3)
+            accent.pack(side="left", fill="y")
+            body = tk.Frame(row, bg=WHITE)
+            body.pack(side="left", fill="x", padx=8)
+            heading = tk.Label(body, text=title, bg=WHITE, fg=TEXT, font=(FONT, 10, "bold"), anchor="w")
+            heading.pack(anchor="w")
+            detail = tk.Label(body, text=text, bg=WHITE, fg=MUTED, font=(FONT, 9), anchor="w",
+                              justify="left", wraplength=320)
+            detail.pack(anchor="w")
+            if cat:
+                for widget in (row, body, heading, detail):
+                    widget.config(cursor="hand2")
+                    widget.bind("<Button-1>", lambda e, c=cat: self.toggle_category(c))
 
     def toggle_category(self, cat):
         self.cat_filter = None if self.cat_filter == cat else cat
@@ -124,7 +179,7 @@ class DashboardMixin:
         if self.cat_filter:
             query += " WHERE category = ?"
             params = (self.cat_filter,)
-        query += " ORDER BY date DESC, id DESC LIMIT 5"
+        query += " ORDER BY date DESC, id DESC LIMIT 4"
         self.cursor.execute(query, params)
         rows = self.cursor.fetchall()
 

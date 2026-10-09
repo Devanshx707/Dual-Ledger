@@ -7,9 +7,11 @@ from widgets import setup_style
 from dashboard import DashboardMixin
 from personal import PersonalMixin
 from group import GroupMixin
+from investments import InvestmentsMixin
+from stats import StatsMixin
 
 
-class FinanceApp(DashboardMixin, PersonalMixin, GroupMixin):
+class FinanceApp(DashboardMixin, PersonalMixin, GroupMixin, InvestmentsMixin, StatsMixin):
     """Window, sidebar and navigation. Each page lives in its own file as a mixin."""
 
     def __init__(self, db_path=DB_NAME):
@@ -46,11 +48,17 @@ class FinanceApp(DashboardMixin, PersonalMixin, GroupMixin):
         self.recent_selected = None
         self.recent_rows = {}
         self.edit_id = None
+        self.chart_metric = "spending"
+        self.chart_data = []
+        self.chart_selected = None
+        self.chart_hover = None
+        self.chart_hit = []
         self.search_var = tk.StringVar()
         self.build_dashboard()
         self.build_personal()
         self.build_group()
         self.load_personal()
+        self.load_investments()
         self.refresh_groups()
         self.show_page("dashboard")
 

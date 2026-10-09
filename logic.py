@@ -78,3 +78,54 @@ def read_amount(text):
     if value <= 0:
         raise ValueError
     return round(value, 2)
+
+
+def portfolio_summary(rows):
+    """rows: (kind, invested, current value). Returns totals, gain percent and value per kind."""
+    invested = sum(r[1] for r in rows)
+    value = sum(r[2] for r in rows)
+    by_kind = {}
+    for kind, _, current in rows:
+        by_kind[kind] = by_kind.get(kind, 0.0) + current
+    gain_pct = (value - invested) / invested * 100 if invested else 0.0
+    return {"invested": round(invested, 2), "value": round(value, 2),
+            "gain": round(value - invested, 2), "gain_pct": gain_pct, "by_kind": by_kind}
+
+
+MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+def monthly_totals(rows, today, months=6):
+    """rows: (amount, 'YYYY-MM-DD'). Returns [(key, label, total)] for the last months, oldest first."""
+    slots, year, month = [], today.year, today.month
+    for _ in range(months):
+        slots.append((year, month))
+        month -= 1
+        if month == 0:
+            month, year = 12, year - 1
+    slots.reverse()
+    totals = {f"{y}-{m:02d}": 0.0 for y, m in slots}
+    for amount, date_text in rows:
+        key = date_text[:7]
+        if key in totals:
+            totals[key] += amount
+    return [(f"{y}-{m:02d}", MONTH_NAMES[m - 1], round(totals[f"{y}-{m:02d}"], 2)) for y, m in slots]
+
+
+def nice_ceiling(value):
+    """Round a value up to a clean axis maximum such as 200, 250, 500 or 1000."""
+    if value <= 0:
+        return 1
+    magnitude = 10 ** (len(str(int(value))) - 1) if value >= 1 else 1
+    for step in (1, 2, 2.5, 5, 10):
+        if value <= step * magnitude:
+            return step * magnitude
+    return 10 * magnitude
+
+
+def compact_number(value):
+    """Short labels such as 300, 1.5k, 1.25k or 2M."""
+    for size, suffix in ((1_000_000, "M"), (1_000, "k")):
+        if value >= size:
+            return f"{value / size:.2f}".rstrip("0").rstrip(".") + suffix
+    return f"{value:.0f}"

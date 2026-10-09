@@ -15,3 +15,5 @@ TRACK = "#E5E7EB"
 TEXT = "#1F2937"
 MUTED = "#6B7280"
 FONT = "Segoe UI"
+
+INVESTMENT_TYPES = ["Stocks", "Mutual Fund", "SIP", "Fixed Deposit", "Gold", "Crypto", "Other"]
