@@ -21,5 +21,17 @@ def connect_db(path=DB_NAME):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL, kind TEXT NOT NULL, amount REAL NOT NULL,
             value REAL NOT NULL, date TEXT NOT NULL)""")
+    cursor.execute("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
     conn.commit()
     return conn, cursor
+
+
+def get_setting(cursor, key, default=None):
+    cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
+    row = cursor.fetchone()
+    return row[0] if row else default
+
+
+def set_setting(conn, cursor, key, value):
+    cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (key, value))
+    conn.commit()

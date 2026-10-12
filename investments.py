@@ -3,20 +3,21 @@ import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 from datetime import datetime
 
-from config import INVESTMENT_TYPES, BG, BLUE, WHITE, TEXT, MUTED, FONT
+import config as cfg
+from config import INVESTMENT_TYPES, FONT
 from logic import read_amount, portfolio_summary
 from widgets import FlatButton, make_card, make_entry, field, make_tree
 
 
 class InvestmentsMixin:
     def build_investments(self, page):
-        body = tk.Frame(page, bg=BG)
+        body = tk.Frame(page, bg=cfg.BG)
         self.inv_body = body
 
         form = make_card(body)
         form.pack(side="left", fill="y", padx=(0, 16))
         form.columnconfigure(0, weight=1)
-        tk.Label(form, text="Add investment", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).grid(
+        tk.Label(form, text="Add investment", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 12, "bold")).grid(
             row=0, column=0, sticky="w", padx=16, pady=(16, 0))
         self.inv_name_entry = make_entry(form)
         self.inv_type_combo = ttk.Combobox(form, values=INVESTMENT_TYPES, state="readonly")
@@ -34,23 +35,23 @@ class InvestmentsMixin:
 
         right = make_card(body)
         right.pack(side="right", fill="both", expand=True)
-        tk.Label(right, text="Portfolio", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).pack(
+        tk.Label(right, text="Portfolio", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 12, "bold")).pack(
             anchor="w", padx=16, pady=(14, 6))
-        stats = tk.Frame(right, bg=WHITE)
+        stats = tk.Frame(right, bg=cfg.WHITE)
         stats.pack(fill="x", padx=16, pady=(0, 8))
         self.inv_stats = {}
         for key, caption in (("invested", "Invested"), ("value", "Current value"), ("gain", "Gain")):
-            cell = tk.Frame(stats, bg=WHITE)
+            cell = tk.Frame(stats, bg=cfg.WHITE)
             cell.pack(side="left", fill="x", expand=True)
-            tk.Label(cell, text=caption, bg=WHITE, fg=MUTED, font=(FONT, 9)).pack(anchor="w")
-            label = tk.Label(cell, text="0.00", bg=WHITE, fg=TEXT, font=(FONT, 14, "bold"))
+            tk.Label(cell, text=caption, bg=cfg.WHITE, fg=cfg.MUTED, font=(FONT, 9)).pack(anchor="w")
+            label = tk.Label(cell, text="0.00", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 14, "bold"))
             label.pack(anchor="w")
             self.inv_stats[key] = label
 
         self.inv_tree = make_tree(right, ("id", "name", "type", "invested", "value", "gain", "date"),
                                   (0, 100, 95, 72, 72, 52, 92), 11)
         self.inv_tree.bind("<Double-1>", lambda e: self.update_investment_value())
-        foot = tk.Frame(right, bg=WHITE)
+        foot = tk.Frame(right, bg=cfg.WHITE)
         foot.pack(fill="x", padx=16, pady=(0, 14))
         FlatButton(foot, "Update value", self.update_investment_value).pack(side="left")
         FlatButton(foot, "Delete", self.delete_investment, "ghost").pack(side="left", padx=6)
@@ -123,5 +124,5 @@ class InvestmentsMixin:
         self.inv_stats["value"].config(text=f"{summary['value']:,.2f}")
         self.inv_stats["gain"].config(
             text=f"{summary['gain']:+,.2f} ({summary['gain_pct']:+.1f}%)",
-            fg=BLUE if summary["gain"] >= 0 else TEXT)
+            fg=cfg.BLUE if summary["gain"] >= 0 else cfg.TEXT)
         self.refresh_dashboard()

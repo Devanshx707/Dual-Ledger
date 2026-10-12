@@ -3,7 +3,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 
-from config import CATEGORIES, BG, WHITE, TEXT, MUTED, FONT
+import config as cfg
+from config import CATEGORIES, FONT
 from logic import parse_people, parse_payers, compute_balances, compute_settlements, read_amount
 from widgets import FlatButton, make_card, make_entry, field, make_tree
 
@@ -12,13 +13,13 @@ class GroupMixin:
     def build_group(self):
         page = self.pages["group"]
         self.page_title(page, "Group Splitter", "Split shared costs and see who owes whom")
-        body = tk.Frame(page, bg=BG)
+        body = tk.Frame(page, bg=cfg.BG)
         body.pack(fill="both", expand=True)
 
         form = make_card(body)
         form.pack(side="left", fill="y", padx=(0, 16))
         form.columnconfigure(0, weight=1)
-        tk.Label(form, text="Add group expense", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).grid(
+        tk.Label(form, text="Add group expense", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 12, "bold")).grid(
             row=0, column=0, sticky="w", padx=16, pady=(16, 0))
         self.group_name_entry = make_entry(form)
         self.group_payer_entry = make_entry(form)
@@ -36,34 +37,34 @@ class GroupMixin:
         FlatButton(form, "Add expense", self.add_group_expense).grid(
             row=14, column=0, sticky="ew", padx=16, pady=(18, 16))
 
-        right = tk.Frame(body, bg=BG)
+        right = tk.Frame(body, bg=cfg.BG)
         right.pack(side="right", fill="both", expand=True)
         top = make_card(right)
         top.pack(fill="both", expand=True)
-        head = tk.Frame(top, bg=WHITE)
+        head = tk.Frame(top, bg=cfg.WHITE)
         head.pack(fill="x", padx=16, pady=14)
-        tk.Label(head, text="Group", bg=WHITE, fg=MUTED, font=(FONT, 10)).pack(side="left")
+        tk.Label(head, text="Group", bg=cfg.WHITE, fg=cfg.MUTED, font=(FONT, 10)).pack(side="left")
         self.view_group = ttk.Combobox(head, state="readonly", width=16)
         self.view_group.pack(side="left", padx=8)
         self.view_group.bind("<<ComboboxSelected>>", lambda e: self.load_group())
         FlatButton(head, "Delete group", self.delete_group_all, "ghost").pack(side="right")
         FlatButton(head, "Delete selected", self.delete_group_expense, "ghost").pack(side="right", padx=6)
         self.group_tree = make_tree(top, ("id", "payer", "amount", "category", "date", "split"),
-                                    (0, 150, 65, 70, 80, 120), 6)
+                                    (0, 130, 75, 85, 95, 110), 6)
 
-        bottom = tk.Frame(right, bg=BG)
+        bottom = tk.Frame(right, bg=cfg.BG)
         bottom.pack(fill="x", pady=(16, 0))
         bal = make_card(bottom)
         bal.pack(side="left", fill="both", expand=True, padx=(0, 8))
-        tk.Label(bal, text="Balances", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).pack(
+        tk.Label(bal, text="Balances", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 12, "bold")).pack(
             anchor="w", padx=16, pady=(12, 4))
         self.balance_tree = make_tree(bal, ("person", "net"), (140, 80), 5)
         settle = make_card(bottom)
         settle.pack(side="right", fill="both", expand=True, padx=(8, 0))
-        tk.Label(settle, text="Settle up", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).pack(
+        tk.Label(settle, text="Settle up", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 12, "bold")).pack(
             anchor="w", padx=16, pady=(12, 4))
-        self.settle_box = tk.Text(settle, height=8, width=24, bg=WHITE, fg=TEXT, relief="flat",
-                                  font=(FONT, 10), state="disabled")
+        self.settle_box = tk.Text(settle, height=8, width=24, bg=cfg.WHITE, fg=cfg.TEXT, relief="flat",
+                                  highlightthickness=0, font=(FONT, 10), state="disabled")
         self.settle_box.pack(fill="both", expand=True, padx=16, pady=(0, 12))
 
     def add_group_expense(self):

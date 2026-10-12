@@ -3,7 +3,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 
-from config import CATEGORIES, BG, BLUE, WHITE, TEXT, MUTED, FONT
+import config as cfg
+from config import CATEGORIES, FONT
 from logic import read_amount
 from widgets import FlatButton, make_card, make_entry, field, make_tree
 
@@ -12,7 +13,7 @@ class PersonalMixin:
     def build_personal(self):
         page = self.pages["personal"]
         self.page_title(page, "Personal Budget", "Track your spending and your investments")
-        switch = tk.Frame(page, bg=BG)
+        switch = tk.Frame(page, bg=cfg.BG)
         switch.pack(fill="x", pady=(0, 12))
         self.view_chips = {}
         for key, label in (("expenses", "Expenses"), ("investments", "Investments")):
@@ -20,13 +21,13 @@ class PersonalMixin:
             chip.pack(side="left", padx=(0, 8))
             chip.bind("<Button-1>", lambda e, k=key: self.set_personal_view(k))
             self.view_chips[key] = chip
-        body = tk.Frame(page, bg=BG)
+        body = tk.Frame(page, bg=cfg.BG)
         self.exp_body = body
 
         form = make_card(body)
         form.pack(side="left", fill="y", padx=(0, 16))
         form.columnconfigure(0, weight=1)
-        self.form_title = tk.Label(form, text="Add expense", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold"))
+        self.form_title = tk.Label(form, text="Add expense", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 12, "bold"))
         self.form_title.grid(row=0, column=0, sticky="w", padx=16, pady=(16, 0))
         self.amount_entry = make_entry(form)
         self.cat_combo = ttk.Combobox(form, values=CATEGORIES, state="readonly")
@@ -45,22 +46,22 @@ class PersonalMixin:
 
         right = make_card(body)
         right.pack(side="right", fill="both", expand=True)
-        head = tk.Frame(right, bg=WHITE)
+        head = tk.Frame(right, bg=cfg.WHITE)
         head.pack(fill="x", padx=16, pady=(14, 8))
-        tk.Label(head, text="Expense records", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).pack(side="left")
+        tk.Label(head, text="Expense records", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 12, "bold")).pack(side="left")
         self.search_entry = make_entry(head, width=20)
         self.search_entry.config(textvariable=self.search_var)
         self.search_entry.pack(side="right", ipady=3)
-        tk.Label(head, text="Search", bg=WHITE, fg=MUTED, font=(FONT, 9)).pack(side="right", padx=8)
+        tk.Label(head, text="Search", bg=cfg.WHITE, fg=cfg.MUTED, font=(FONT, 9)).pack(side="right", padx=8)
         self.search_var.trace_add("write", lambda *args: self.load_personal(False))
 
         self.tree = make_tree(right, ("id", "category", "amount", "date"), (0, 150, 110, 110), 14)
         self.tree.bind("<Double-1>", lambda e: self.edit_selected())
         self.tree.bind("<Delete>", lambda e: self.delete_entry())
 
-        foot = tk.Frame(right, bg=WHITE)
+        foot = tk.Frame(right, bg=cfg.WHITE)
         foot.pack(fill="x", padx=16, pady=(0, 14))
-        self.total_label = tk.Label(foot, text="", bg=WHITE, fg=TEXT, font=(FONT, 11, "bold"))
+        self.total_label = tk.Label(foot, text="", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 11, "bold"))
         self.total_label.pack(side="left")
         FlatButton(foot, "Delete all", self.delete_all_entries, "ghost").pack(side="right")
         FlatButton(foot, "Delete", self.delete_entry, "ghost").pack(side="right", padx=6)
@@ -74,7 +75,7 @@ class PersonalMixin:
         self.inv_body.pack_forget()
         (self.exp_body if view == "expenses" else self.inv_body).pack(fill="both", expand=True)
         for key, chip in self.view_chips.items():
-            chip.config(bg=BLUE if key == view else WHITE, fg=WHITE if key == view else MUTED)
+            chip.config(bg=cfg.BLUE if key == view else cfg.WHITE, fg=cfg.ONBLUE if key == view else cfg.MUTED)
 
     def add_entry(self):
         category = self.cat_combo.get()

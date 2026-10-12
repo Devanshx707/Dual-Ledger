@@ -3,7 +3,8 @@ import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 
-from config import CATEGORIES, BLUE, BLUE_LIGHT, WHITE, BG, TEXT, MUTED, FONT
+import config as cfg
+from config import CATEGORIES, FONT
 from logic import portfolio_summary
 from tips import generate_tips
 from widgets import FlatButton, make_card, make_bar, draw_bar
@@ -14,50 +15,50 @@ class DashboardMixin:
         page = self.pages["dashboard"]
         self.page_title(page, "Dashboard", "Overview of your personal spending")
 
-        top = tk.Frame(page, bg=BG)
+        top = tk.Frame(page, bg=cfg.BG)
         top.pack(fill="x", pady=(0, 16))
         tips = make_card(top)
         tips.configure(width=370, height=236)
         tips.pack_propagate(False)
         tips.pack(side="right", fill="y", padx=(16, 0))
-        tk.Label(tips, text="Tips for you", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).pack(
+        tk.Label(tips, text="Tips for you", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 12, "bold")).pack(
             anchor="w", padx=16, pady=(12, 2))
-        tk.Label(tips, text="General tips from your own data. Not financial advice.", bg=WHITE,
-                 fg=MUTED, font=(FONT, 8)).pack(side="bottom", anchor="w", padx=16, pady=(0, 8))
-        self.tips_frame = tk.Frame(tips, bg=WHITE)
+        tk.Label(tips, text="General tips from your own data. Not financial advice.", bg=cfg.WHITE,
+                 fg=cfg.MUTED, font=(FONT, 8)).pack(side="bottom", anchor="w", padx=16, pady=(0, 8))
+        self.tips_frame = tk.Frame(tips, bg=cfg.WHITE)
         self.tips_frame.pack(fill="both", expand=True, padx=8)
         hero = make_card(top)
         hero.pack(side="left", fill="both", expand=True)
-        tk.Label(hero, text="Total spent", bg=WHITE, fg=MUTED, font=(FONT, 10)).pack(
+        tk.Label(hero, text="Total spent", bg=cfg.WHITE, fg=cfg.MUTED, font=(FONT, 10)).pack(
             anchor="w", padx=24, pady=(18, 0))
-        self.hero_total = tk.Label(hero, text="0.00", bg=WHITE, fg=TEXT, font=(FONT, 28, "bold"))
+        self.hero_total = tk.Label(hero, text="0.00", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 28, "bold"))
         self.hero_total.pack(anchor="w", padx=24)
-        row = tk.Frame(hero, bg=WHITE)
+        row = tk.Frame(hero, bg=cfg.WHITE)
         row.pack(fill="x", padx=24, pady=(10, 4))
-        self.hero_pct = tk.Label(row, text="0%", bg=BLUE, fg=WHITE, font=(FONT, 16, "bold"),
+        self.hero_pct = tk.Label(row, text="0%", bg=cfg.BLUE, fg=cfg.ONBLUE, font=(FONT, 16, "bold"),
                                  width=6, pady=10)
         self.hero_pct.pack(side="left")
         self.hero_bar = make_bar(row, 46)
         self.hero_bar.pack(side="left", fill="x", expand=True, padx=(8, 0))
-        self.hero_caption = tk.Label(hero, text="", bg=WHITE, fg=MUTED, font=(FONT, 9))
+        self.hero_caption = tk.Label(hero, text="", bg=cfg.WHITE, fg=cfg.MUTED, font=(FONT, 9))
         self.hero_caption.pack(anchor="w", padx=24, pady=(0, 16))
 
-        lower = tk.Frame(page, bg=BG)
+        lower = tk.Frame(page, bg=cfg.BG)
         lower.pack(fill="both", expand=True)
 
         cat_card = make_card(lower)
-        head_row = tk.Frame(cat_card, bg=WHITE)
+        head_row = tk.Frame(cat_card, bg=cfg.WHITE)
         head_row.pack(fill="x", padx=16, pady=(14, 0))
-        tk.Label(head_row, text="Statistics", bg=WHITE, fg=TEXT, font=(FONT, 12, "bold")).pack(side="left")
+        tk.Label(head_row, text="Statistics", bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 12, "bold")).pack(side="left")
         self.stats_chips = {}
         for key, label in (("monthly", "Monthly"), ("categories", "Categories")):
             chip = tk.Label(head_row, text=label, padx=10, pady=3, cursor="hand2", font=(FONT, 9, "bold"))
             chip.pack(side="right", padx=(6, 0))
             chip.bind("<Button-1>", lambda e, k=key: self.set_stats_view(k))
             self.stats_chips[key] = chip
-        self.stats_hint = tk.Label(cat_card, text="", bg=WHITE, fg=MUTED, font=(FONT, 9))
+        self.stats_hint = tk.Label(cat_card, text="", bg=cfg.WHITE, fg=cfg.MUTED, font=(FONT, 9))
         self.stats_hint.pack(anchor="w", padx=16, pady=(0, 6))
-        self.cat_frame = tk.Frame(cat_card, bg=WHITE)
+        self.cat_frame = tk.Frame(cat_card, bg=cfg.WHITE)
         self.build_stats_chart(cat_card)
         self.set_stats_view("monthly")
 
@@ -66,17 +67,17 @@ class DashboardMixin:
         cat_card.pack(side="left", fill="both", expand=True, padx=(0, 16))
         recent.configure(width=340)
         recent.pack_propagate(False)
-        head = tk.Frame(recent, bg=WHITE)
+        head = tk.Frame(recent, bg=cfg.WHITE)
         head.pack(fill="x", padx=16, pady=(14, 6))
-        self.recent_title = tk.Label(head, text="Recent entries", bg=WHITE, fg=TEXT,
+        self.recent_title = tk.Label(head, text="Recent entries", bg=cfg.WHITE, fg=cfg.TEXT,
                                      font=(FONT, 12, "bold"))
         self.recent_title.pack(side="left")
         self.recent_clear = FlatButton(head, "Clear", self.clear_filter, "ghost")
-        actions = tk.Frame(recent, bg=WHITE)
+        actions = tk.Frame(recent, bg=cfg.WHITE)
         actions.pack(side="bottom", fill="x", padx=16, pady=14)
         FlatButton(actions, "Edit", self.edit_recent).pack(side="left")
         FlatButton(actions, "Delete", self.delete_recent, "ghost").pack(side="left", padx=6)
-        self.recent_list = tk.Frame(recent, bg=WHITE)
+        self.recent_list = tk.Frame(recent, bg=cfg.WHITE)
         self.recent_list.pack(fill="both", expand=True, padx=8)
 
     def paint(self, widgets, color):
@@ -111,27 +112,27 @@ class DashboardMixin:
             value = totals.get(cat, 0.0)
             part = value / total if total else 0
             active = self.cat_filter == cat
-            bg = BLUE_LIGHT if active else WHITE
+            bg = cfg.SELECT if active else cfg.WHITE
             row = tk.Frame(self.cat_frame, bg=bg, cursor="hand2")
             row.pack(fill="x", pady=1)
             row.columnconfigure(1, weight=1)
-            name = tk.Label(row, text=cat, bg=bg, fg=TEXT, font=(FONT, 10, "bold"), width=13, anchor="w")
+            name = tk.Label(row, text=cat, bg=bg, fg=cfg.TEXT, font=(FONT, 10, "bold"), width=13, anchor="w")
             name.grid(row=0, column=0, padx=(8, 0), pady=8)
             bar = tk.Canvas(row, height=8, bg=bg, highlightthickness=0)
             bar.bind("<Configure>", lambda e, c=bar: draw_bar(c))
             bar.grid(row=0, column=1, sticky="ew", padx=12)
             draw_bar(bar, part)
-            amount = tk.Label(row, text=f"{value:,.2f}", bg=bg, fg=MUTED, font=(FONT, 10),
+            amount = tk.Label(row, text=f"{value:,.2f}", bg=bg, fg=cfg.MUTED, font=(FONT, 10),
                               width=10, anchor="e")
             amount.grid(row=0, column=2)
-            pct = tk.Label(row, text=f"{part * 100:.0f}%", bg=bg, fg=BLUE, font=(FONT, 10, "bold"),
+            pct = tk.Label(row, text=f"{part * 100:.0f}%", bg=bg, fg=cfg.BLUE, font=(FONT, 10, "bold"),
                            width=5, anchor="e")
             pct.grid(row=0, column=3, padx=(0, 8))
             widgets = [row, name, bar, amount, pct]
             for widget in widgets:
                 widget.bind("<Button-1>", lambda e, c=cat: self.toggle_category(c))
-                widget.bind("<Enter>", lambda e, ws=widgets, a=active: None if a else self.paint(ws, BG))
-                widget.bind("<Leave>", lambda e, ws=widgets, a=active: None if a else self.paint(ws, WHITE))
+                widget.bind("<Enter>", lambda e, ws=widgets, a=active: None if a else self.paint(ws, cfg.BG))
+                widget.bind("<Leave>", lambda e, ws=widgets, a=active: None if a else self.paint(ws, cfg.WHITE))
         self.render_recent()
         self.render_tips()
         self.refresh_stats()
@@ -144,15 +145,15 @@ class DashboardMixin:
         self.cursor.execute("SELECT kind, amount, value FROM investments")
         holdings = self.cursor.fetchall()
         for title, text, cat in generate_tips(expenses, holdings):
-            row = tk.Frame(self.tips_frame, bg=WHITE)
+            row = tk.Frame(self.tips_frame, bg=cfg.WHITE)
             row.pack(fill="x", pady=3)
-            accent = tk.Frame(row, bg=BLUE, width=3)
+            accent = tk.Frame(row, bg=cfg.BLUE, width=3)
             accent.pack(side="left", fill="y")
-            body = tk.Frame(row, bg=WHITE)
+            body = tk.Frame(row, bg=cfg.WHITE)
             body.pack(side="left", fill="x", padx=8)
-            heading = tk.Label(body, text=title, bg=WHITE, fg=TEXT, font=(FONT, 10, "bold"), anchor="w")
+            heading = tk.Label(body, text=title, bg=cfg.WHITE, fg=cfg.TEXT, font=(FONT, 10, "bold"), anchor="w")
             heading.pack(anchor="w")
-            detail = tk.Label(body, text=text, bg=WHITE, fg=MUTED, font=(FONT, 9), anchor="w",
+            detail = tk.Label(body, text=text, bg=cfg.WHITE, fg=cfg.MUTED, font=(FONT, 9), anchor="w",
                               justify="left", wraplength=320)
             detail.pack(anchor="w")
             if cat:
@@ -192,21 +193,21 @@ class DashboardMixin:
         if self.recent_selected not in [r[0] for r in rows]:
             self.recent_selected = None
         if not rows:
-            tk.Label(self.recent_list, text="No entries yet.", bg=WHITE, fg=MUTED,
+            tk.Label(self.recent_list, text="No entries yet.", bg=cfg.WHITE, fg=cfg.MUTED,
                      font=(FONT, 10)).pack(pady=28)
             return
 
         for rid, cat, amt, date in rows:
-            bg = BLUE_LIGHT if rid == self.recent_selected else WHITE
+            bg = cfg.SELECT if rid == self.recent_selected else cfg.WHITE
             row = tk.Frame(self.recent_list, bg=bg, cursor="hand2")
             row.pack(fill="x", pady=1)
             left = tk.Frame(row, bg=bg)
             left.pack(side="left", padx=10, pady=6)
-            name = tk.Label(left, text=cat, bg=bg, fg=TEXT, font=(FONT, 10, "bold"))
+            name = tk.Label(left, text=cat, bg=bg, fg=cfg.TEXT, font=(FONT, 10, "bold"))
             name.pack(anchor="w")
-            when = tk.Label(left, text=date, bg=bg, fg=MUTED, font=(FONT, 9))
+            when = tk.Label(left, text=date, bg=bg, fg=cfg.MUTED, font=(FONT, 9))
             when.pack(anchor="w")
-            amount = tk.Label(row, text=f"{amt:,.2f}", bg=bg, fg=BLUE, font=(FONT, 11, "bold"))
+            amount = tk.Label(row, text=f"{amt:,.2f}", bg=bg, fg=cfg.BLUE, font=(FONT, 11, "bold"))
             amount.pack(side="right", padx=12)
             widgets = [row, left, name, when, amount]
             self.recent_rows[rid] = widgets
@@ -218,14 +219,14 @@ class DashboardMixin:
 
     def select_recent(self, rid):
         if self.recent_selected in self.recent_rows:
-            self.paint(self.recent_rows[self.recent_selected], WHITE)
+            self.paint(self.recent_rows[self.recent_selected], cfg.WHITE)
         self.recent_selected = None if self.recent_selected == rid else rid
         if self.recent_selected is not None:
-            self.paint(self.recent_rows[rid], BLUE_LIGHT)
+            self.paint(self.recent_rows[rid], cfg.SELECT)
 
     def hover_recent(self, rid, inside):
         if rid != self.recent_selected and rid in self.recent_rows:
-            self.paint(self.recent_rows[rid], BG if inside else WHITE)
+            self.paint(self.recent_rows[rid], cfg.BG if inside else cfg.WHITE)
 
     def edit_recent(self):
         if self.recent_selected is None:

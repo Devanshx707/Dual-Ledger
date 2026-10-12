@@ -2,15 +2,16 @@
 import tkinter as tk
 from datetime import date
 
-from config import BG, BLUE, BLUE_DARK, BORDER, WHITE, TEXT, MUTED, FONT
+import config as cfg
+from config import FONT
 from logic import monthly_totals, nice_ceiling, compact_number
 
 
 class StatsMixin:
     def build_stats_chart(self, parent):
-        frame = tk.Frame(parent, bg=WHITE)
+        frame = tk.Frame(parent, bg=cfg.WHITE)
         self.chart_frame = frame
-        bar = tk.Frame(frame, bg=WHITE)
+        bar = tk.Frame(frame, bg=cfg.WHITE)
         bar.pack(fill="x", padx=16)
         self.metric_chips = {}
         for key, label in (("spending", "Spending"), ("investing", "Investing")):
@@ -18,10 +19,10 @@ class StatsMixin:
             chip.pack(side="left", padx=(0, 6))
             chip.bind("<Button-1>", lambda e, k=key: self.set_metric(k))
             self.metric_chips[key] = chip
-        self.stats_info = tk.Label(bar, text="", bg=WHITE, fg=MUTED, font=(FONT, 9))
+        self.stats_info = tk.Label(bar, text="", bg=cfg.WHITE, fg=cfg.MUTED, font=(FONT, 9))
         self.stats_info.pack(side="right")
 
-        self.chart = tk.Canvas(frame, bg=WHITE, highlightthickness=0, height=220)
+        self.chart = tk.Canvas(frame, bg=cfg.WHITE, highlightthickness=0, height=220)
         self.chart.pack(fill="both", expand=True, padx=16, pady=(6, 12))
         self.chart.bind("<Configure>", lambda e: self.draw_chart())
         self.chart.bind("<Motion>", self.on_chart_motion)
@@ -39,12 +40,12 @@ class StatsMixin:
             self.cat_frame.pack(fill="x", padx=8, pady=(0, 14))
             self.stats_hint.config(text="Click a category to filter recent entries")
         for key, chip in self.stats_chips.items():
-            chip.config(bg=BLUE if key == view else BG, fg=WHITE if key == view else MUTED)
+            chip.config(bg=cfg.BLUE if key == view else cfg.BG, fg=cfg.ONBLUE if key == view else cfg.MUTED)
 
     def paint_metric_chips(self):
         for key, chip in self.metric_chips.items():
-            chip.config(bg=BLUE if key == self.chart_metric else BG,
-                        fg=WHITE if key == self.chart_metric else MUTED)
+            chip.config(bg=cfg.BLUE if key == self.chart_metric else cfg.BG,
+                        fg=cfg.ONBLUE if key == self.chart_metric else cfg.MUTED)
 
     def set_metric(self, metric):
         self.chart_metric = metric
@@ -67,7 +68,7 @@ class StatsMixin:
         width, height = canvas.winfo_width(), canvas.winfo_height()
         if width < 80 or height < 80 or not self.chart_data:
             return
-        left, right, top, bottom = 46, 56, 22, 26
+        left, right, top, bottom = 46, 68, 22, 26
         plot_w, plot_h = width - left - right, height - top - bottom
         values = [v for _, _, v in self.chart_data]
         peak = nice_ceiling(max(values))
@@ -75,9 +76,9 @@ class StatsMixin:
 
         for fraction in (0, 0.5, 1):
             y = base - plot_h * fraction
-            canvas.create_line(left, y, left + plot_w, y, fill=BORDER)
+            canvas.create_line(left, y, left + plot_w, y, fill=cfg.BORDER)
             canvas.create_text(left - 6, y, text=compact_number(peak * fraction), anchor="e",
-                               fill=MUTED, font=(FONT, 8))
+                               fill=cfg.MUTED, font=(FONT, 8))
 
         slot = plot_w / len(self.chart_data)
         bar_w = slot * 0.5
@@ -87,22 +88,22 @@ class StatsMixin:
             y0 = base - plot_h * value / peak
             active = i in (self.chart_selected, self.chart_hover)
             if value > 0:
-                canvas.create_rectangle(x0, y0, x1, base, fill=BLUE_DARK if active else BLUE, outline="")
+                canvas.create_rectangle(x0, y0, x1, base, fill=cfg.BLUE_DARK if active else cfg.BLUE, outline="")
                 canvas.create_text((x0 + x1) / 2, y0 - 8, text=compact_number(value),
-                                   fill=TEXT if active else MUTED, font=(FONT, 8, "bold"))
+                                   fill=cfg.TEXT if active else cfg.MUTED, font=(FONT, 8, "bold"))
             else:
-                canvas.create_rectangle(x0, base - 2, x1, base, fill=BORDER, outline="")
+                canvas.create_rectangle(x0, base - 2, x1, base, fill=cfg.BORDER, outline="")
             canvas.create_text((x0 + x1) / 2, base + 13, text=label,
-                               fill=TEXT if active else MUTED, font=(FONT, 9, "bold" if active else "normal"))
+                               fill=cfg.TEXT if active else cfg.MUTED, font=(FONT, 9, "bold" if active else "normal"))
             self.chart_hit.append((left + slot * i, left + slot * (i + 1), i))
 
         filled = [v for v in values if v > 0]
         if filled:
             average = sum(filled) / len(filled)
             y = base - plot_h * average / peak
-            canvas.create_line(left, y, left + plot_w, y, fill=MUTED, dash=(4, 3))
+            canvas.create_line(left, y, left + plot_w, y, fill=cfg.MUTED, dash=(4, 3))
             canvas.create_text(left + plot_w + 6, y, anchor="w", text=f"Avg {compact_number(average)}",
-                               fill=MUTED, font=(FONT, 8))
+                               fill=cfg.MUTED, font=(FONT, 8))
 
     def bar_at(self, x):
         for start, end, index in self.chart_hit:
